@@ -1,6 +1,6 @@
 # Library Book Recommendation System
 
-![image](MyNextBook.jpg)
+![image](images/MyNextBook.jpg)
 
 
 This project aims to develop a personalized book recommendation engine that utilizes user data, ratings, and book information to generate tailored book suggestions for individual users based on their preferences, demographics, and reading history.
