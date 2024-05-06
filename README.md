@@ -40,7 +40,7 @@ $ii.$ **Create User-Friendly Interface:** Develop an intuitive and user-friendly
 
 ### Metrics Of Success
 
-The success of our recommendation engine lies in delivering personalized content to every book lover on our platform, as reflected by high conversion rates of the content provided to users. While the industry standard for mean absolute error (MAE) is 0.5, we aim to surpass these expectations by developing a recommendation engine with a maximum MAE of 0.3. This commitment ensures that our engine consistently provides accurate and tailored book suggestions, exceeding industry benchmarks and enhancing user satisfaction and engagement.
+The success of our recommendation engine lies in delivering personalized content to every book lover on our platform, as reflected by high conversion rates of the content provided to users. While the industry standard for mean absolute error (MAE) is 1.0, we aim to surpass these expectations by developing a recommendation engine with a MAE below 1.0. This commitment ensures that our engine consistently provides accurate and tailored book suggestions, exceeding industry benchmarks and enhancing user satisfaction and engagement.
 
 ### Contributors
 1. Kennedy Owino
