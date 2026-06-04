@@ -1,0 +1,74 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: library-backend
+  profiles:
+    active: dev
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/library_db}
+    username: ${SPRING_DATASOURCE_USERNAME:library_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:library_pass}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        jdbc:
+          batch_size: 50
+    show-sql: false
+    open-in-view: false
+
+  mail:
+    host: ${SPRING_MAIL_HOST:localhost}
+    port: ${SPRING_MAIL_PORT:1025}
+    username: ${SPRING_MAIL_USERNAME:}
+    password: ${SPRING_MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+            required: false
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:5J2m9sQ4v8y/B?E(H+MbQeThWmYq3t6w9z$C&F)J@NcRfUjXn2r5u7x!A%D*G-Ka}
+    expiration-ms: ${JWT_EXPIRY_MS:86400000} # 24 hours
+  ml-service-url: ${ML_SERVICE_URL:http://localhost:5000}
+  csv-data-path: ${CSV_DATA_PATH:/app/data} # Set inside container
+  initial-admin:
+    email: ${INITIAL_ADMIN_EMAIL:admin@library.com}
+    password: ${INITIAL_ADMIN_PASSWORD:Admin@123}
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: alpha
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always

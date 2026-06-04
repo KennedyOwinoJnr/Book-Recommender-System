@@ -1,60 +1,88 @@
-# Library Book Recommendation System
+# Tomrec — Enterprise Library Management System (Modernized)
 
-![image](images/MyNextBook.jpg)
+Welcome to the modernized **Tomrec Library Management System**. The system has been completely rewritten and modernized from the Streamlit Python prototype into an enterprise-grade, scalable, containerized, multi-dashboard platform.
 
+---
 
-This project aims to develop a personalized book recommendation engine that utilizes user data, ratings, and book information to generate tailored book suggestions for individual users based on their preferences, demographics, and reading history.
+## 🚀 Key Modernized Enhancements
 
-### Business Understanding
+1. **Clean Microservice Separation**: Rebuilt the core operations backend in Java Spring Boot 3.2, user portals in React 18, and kept Python solely for collaborative and hybrid machine learning recommendations.
+2. **Normalized SQL Storage**: Replaced pandas in-memory data pickle lookups with PostgreSQL 16. Includes indexes on query fields, primary foreign key relations, and automated migration scripts via Flyway.
+3. **Role-Based Access Control (RBAC)**: Implemented standard roles (`SUPER_ADMIN`, `ADMIN`, `LIBRARIAN`, `MEMBER`) with endpoint protection using Spring Security and JWT.
+4. **Auto Database Seeding**: Automatic seeding of ~271,000 books, ~1.1M ratings, and ~278,000 users directly into Postgres on first container startup.
+5. **SMTP Verification Desk**: Implemented secure registration with email validation and password reset flows routed through a local mock SMTP testing server (Mailpit).
 
-In the increasingly competitive landscape of online libraries and book platforms, personalized recommendation systems have emerged as a critical tool for enhancing user engagement, satisfaction, and retention. Understanding users' unique preferences, demographics, and reading habits is essential for delivering relevant and tailored book suggestions that resonate with individual tastes. By leveraging advanced algorithms and user data analytics, our platform aims to revolutionize the book discovery experience, offering users a curated selection of books that align with their interests and preferences. Through continuous iteration and optimization, we strive to create a dynamic and immersive user interface that not only facilitates book exploration but also fosters a sense of community and interaction among readers, ultimately driving business growth and differentiation in the competitive market.
+---
 
-### Features
+## 🛠️ Technology Stack
 
-1. Collaborative filtering recommendation engine based on user ratings and book metadata
-2. User registration and profile creation interface
-3. Intuitive recommendation display for personalized book suggestions
-4. Exploratory data analysis and visualization of user reading patterns
+| Domain | Technology | Details |
+|---|---|---|
+| **Backend API** | Spring Boot 3.2.3 | Java 17, Spring Security, Data JPA, Flyway, RestTemplate |
+| **Frontend Portal** | React 18 | Vite, React Router, Lucide, Recharts |
+| **ML Engine** | Python FastAPI | Uvicorn, scikit-surprise (SVD models), scikit-learn (TF-IDF) |
+| **Database** | PostgreSQL 16 | Alpine image, named data volume, optimized indexing |
+| **SMTP Mail** | Mailpit | Mock developer SMTP server with local web mail inbox UI |
+| **Infrastructure** | Docker Compose | Multi-container setups with health checks and volume persistence |
 
+---
 
-### Objectives
+## 📁 System Directory Map
 
-1. Develop a robust and accurate recommendation algorithm that leverages user preferences and book similarities to deliver relevant book recommendations.
-2. Create a user-friendly interface that facilitates seamless user registration, profile creation, and recommendation display.
-3. Achieve a maximum Mean Absolute Error (MAE) of 0.3, surpassing the industry standard of 0.5, to ensure highly accurate and tailored book suggestions.
+```
+Book-Recommender-System/
+├── backend/          # Java Spring Boot REST API
+├── frontend/         # React SPA web portal (Port 3000)
+├── ml-service/       # FastAPI ML recommendation engine (Port 5000)
+├── docs/             # Technical docs (Architecture, API, Operations)
+├── data/             # Original CSV datasets (used to seed DB)
+└── Deployment/       # Streamlit prototype and SVD pickle models
+```
 
+---
 
-### Dataset
-The project utilizes a dataset obtained from Kaggle and the Google Books API, which includes the following information:
+## ⚙️ Quick Start Setup (Docker Compose)
 
-1. User ratings and preferences
-2. Book metadata (title, author, publication year, publisher, categories, description)
-3. User demographics (age, location)
+The entire application runs inside Docker. **Zero local dependencies** are required on your host system.
 
-### Problem Statement
+### Prerequisites
+- Docker and Docker Compose installed and running.
 
-The current landscape of online libraries and book platforms lacks personalized recommendation systems that effectively cater to individual users' preferences and reading habits. Existing platforms often rely on generic recommendations or fail to leverage user data to deliver relevant book suggestions, leading to suboptimal user experiences and limited engagement. Our platform aims to address this challenge by developing a robust and intuitive recommendation system that harnesses user data, ratings, and book information to provide personalized book recommendations tailored to each user's unique profile. By seamlessly integrating user registration, profile creation, and recommendation display functionalities into the user interface, we seek to empower users to discover new books that align with their interests and preferences while fostering a vibrant and engaging community of readers.
+### Execution Commands
+1. Clone / open the project directory in your terminal.
+2. Launch the services:
+   ```bash
+   docker compose up --build
+   ```
+3. Docker will build and start all containers. On first run, the backend will perform database seeding. **Seeding will take ~1–2 minutes** due to dataset sizes. Keep an eye on container logs:
+   - `library-backend  | Database is empty. Starting CSV database seeding...`
+   - `library-backend  | Total books imported: 100000`
+   - `library-backend  | Database seeding successfully completed in X ms.`
 
+---
 
-$ii.$ **Create User-Friendly Interface:** Develop an intuitive and user-friendly interface that facilitates seamless user registration, profile creation, and recommendation display. 
+## 🌐 Dashboard Access URLs
 
-### Metrics Of Success
+| Application | Address | Credentials / Info |
+|---|---|---|
+| **React Web Portal** | [http://localhost:3000](http://localhost:3000) | Main library app. Registration & log-in. |
+| **Mailpit Inbox** | [http://localhost:8025](http://localhost:8025) | View sent verification & password reset emails. |
+| **ML FastAPI Docs** | [http://localhost:5000/docs](http://localhost:5000/docs) | OpenAPI interactive Swagger for ML microservice. |
+| **Backend Actuator** | [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health) | Health status of Spring Boot service. |
 
-The success of our recommendation engine lies in delivering personalized content to every book lover on our platform, as reflected by high conversion rates of the content provided to users. While the industry standard for mean absolute error (MAE) is 1.0, we aim to surpass these expectations by developing a recommendation engine with a MAE below 1.0. This commitment ensures that our engine consistently provides accurate and tailored book suggestions, exceeding industry benchmarks and enhancing user satisfaction and engagement.
+---
 
-### Contributors
-1. Kennedy Owino
-2. Donnah Mwaniki
-3. Wallace Ouma
-4. Cynthia Jepkogei
-5. **Collins Chumba** - *Group manager*
-6. Mahmoud Yuna
-7. Ian Odhiambo
+## 🔑 Default Administrator Credentials
 
-### Acknowledgments
-We would like to thank the following resources for their invaluable contributions:
+To test privileged dashboards (Admin / Librarian) immediately, log in using:
+- **Email**: `admin@library.com`
+- **Password**: `Admin@123`
 
-Kaggle for providing the book ratings dataset.
-Google Books API for providing additional book metadata.
-scikit-learn, Pandas, and Matplotlib for their powerful data analysis and visualization tools.
+---
 
+## 📖 Operational Documentation
+
+Detailed operation logs are stored in the `docs/` folder:
+- **[System Architecture Guide](file:///c:/Users/KennedyOdhiambo/Desktop/Hobbie/Book-Recommender-System/docs/architecture.md)** — Architectural design, database normalization schema, and SVD recommender integrations.
+- **[REST API Reference](file:///c:/Users/KennedyOdhiambo/Desktop/Hobbie/Book-Recommender-System/docs/api-reference.md)** — Available REST endpoints, request structures, and JWT claims.
+- **[Operations User Guide](file:///c:/Users/KennedyOdhiambo/Desktop/Hobbie/Book-Recommender-System/docs/user-guide.md)** — Step-by-step instructions for reader checkouts, librarian desk actions, and mock email validation.
