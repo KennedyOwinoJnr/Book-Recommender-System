@@ -55,18 +55,6 @@ services:
       - ./data:/app/data:ro # Bind mount original CSVs for database seeding
     environment:
       - SPRING_PROFILES_ACTIVE=dev
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/library_db
-      - SPRING_DATASOURCE_USERNAME=library_user
-      - SPRING_DATASOURCE_PASSWORD=library_pass
-      - SPRING_MAIL_HOST=mailpit
-      - SPRING_MAIL_PORT=1025
-      - SPRING_MAIL_USERNAME=
-      - SPRING_MAIL_PASSWORD=
-      - ML_SERVICE_URL=http://ml-service:5000
-      - JWT_SECRET=dGhpcyBpcyBhIHZlcnkgbG9uZyBhbmQgc2VjdXJlIGJhc2U2NCBlbmNvZGVkIHNlY3JldCBrZXkgZm9yIEpXVCBITUFDU0hBNTEy
-      - JWT_EXPIRY_MS=86400000
-      - INITIAL_ADMIN_EMAIL=admin@library.com
-      - INITIAL_ADMIN_PASSWORD=Admin@123
     depends_on:
       postgres:
         condition: service_healthy
