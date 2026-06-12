@@ -38,7 +38,7 @@ public class BorrowingService {
 
     @Transactional
     public Borrowing borrowBook(User user, Long bookId) {
-        // 1. Enforce borrowing limits
+        // Enforce borrowing limits
         long activeCount = borrowingRepository.countActiveByUserId(user.getId());
         if (activeCount >= MAX_ACTIVE_BORROWS) {
             throw new IllegalStateException("User has reached the maximum borrowing limit of " + MAX_ACTIVE_BORROWS + " books.");
@@ -77,7 +77,7 @@ public class BorrowingService {
 
     @Transactional
     public Borrowing returnBook(Long borrowingId, Long actorId, String actorEmail) {
-        Borrowing borrowing = borrowingRepository.findById(borrowingId)
+        Borrowing borrowing = borrowingRepository.findByIdWithAssociations(borrowingId)
                 .orElseThrow(() -> new IllegalArgumentException("Borrowing record not found with id: " + borrowingId));
 
         if (!"ACTIVE".equals(borrowing.getStatus()) && !"OVERDUE".equals(borrowing.getStatus())) {
@@ -110,14 +110,17 @@ public class BorrowingService {
         return saved;
     }
 
+    @Transactional(readOnly = true)
     public List<Borrowing> getActiveBorrowingsForUser(Long userId) {
         return borrowingRepository.findActiveByUserId(userId);
     }
 
+    @Transactional(readOnly = true)
     public List<Borrowing> getAllBorrowingsForUser(Long userId) {
         return borrowingRepository.findByUserId(userId);
     }
 
+    @Transactional(readOnly = true)
     public List<Borrowing> getAllActiveBorrowings() {
         return borrowingRepository.findAllActive();
     }

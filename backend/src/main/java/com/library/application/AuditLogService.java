@@ -29,7 +29,7 @@ public class AuditLogService {
                 .build();
         auditLogRepository.save(auditLog);
     }
-
+    @Transactional(readOnly = true)
     public Page<AuditLog> getLogs(Pageable pageable) {
         return auditLogRepository.findAllByOrderByCreatedAtDesc(pageable);
     }

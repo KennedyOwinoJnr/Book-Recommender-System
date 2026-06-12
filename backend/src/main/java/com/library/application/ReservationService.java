@@ -72,6 +72,7 @@ public class ReservationService {
                 "Cancelled reservation: " + reservation.getBook().getTitle());
     }
 
+    @Transactional(readOnly = true)
     public List<Reservation> getReservationsForUser(Long userId) {
         return reservationRepository.findByUserId(userId);
     }
