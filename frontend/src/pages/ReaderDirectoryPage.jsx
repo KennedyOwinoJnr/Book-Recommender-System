@@ -1,32 +1,55 @@
-import React, { useEffect, useState } from 'react';
-import { Users, Shield, Check, X, Search, ToggleLeft, ToggleRight } from 'lucide-react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { Users, Shield, Check, X, Search, ToggleLeft, ToggleRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import apiClient from '../api/client';
+
+const PAGE_SIZE = 15;
 
 const ReaderDirectoryPage = () => {
   const [users, setUsers] = useState([]);
   const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [loading, setLoading] = useState(true);
-  
+
+  // Pagination state (Spring Page response)
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+
   // Role assignment modal state
   const [selectedUser, setSelectedUser] = useState(null);
   const [assignedRoles, setAssignedRoles] = useState([]);
-  
+
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
   const currentUserObj = JSON.parse(localStorage.getItem('user') || '{}');
   const isSuperAdmin = currentUserObj.roles?.includes('ROLE_SUPER_ADMIN');
 
+  // Debounce the search query by 400ms; also reset to page 0 on new search
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+      setCurrentPage(0);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [query]);
 
-  const fetchUsers = async () => {
+  // Fetch whenever page or debounced query changes
+  useEffect(() => {
+    fetchUsers(currentPage, debouncedQuery);
+  }, [currentPage, debouncedQuery]);
+
+  const fetchUsers = async (page, search) => {
     setLoading(true);
     try {
-      const res = await apiClient.get('/users');
-      setUsers(res.data);
+      const res = await apiClient.get('/users', {
+        params: { page, size: PAGE_SIZE, search },
+      });
+      const data = res.data;
+      setUsers(data.content);
+      setTotalPages(data.totalPages);
+      setTotalElements(data.totalElements);
     } catch (err) {
       console.error(err);
       setError('Failed to fetch reader directory');
@@ -40,15 +63,15 @@ const ReaderDirectoryPage = () => {
       setError('You cannot deactivate your own account.');
       return;
     }
-    
+
     if (!window.confirm(`Are you sure you want to ${currentStatus ? 'deactivate' : 'activate'} user account "${username}"?`)) return;
     setMessage('');
     setError('');
 
     try {
-      await apiClient.post(`/${id}/activate`, { active: !currentStatus });
+      await apiClient.post(`/users/${id}/activate`, { active: !currentStatus });
       setMessage(`User "${username}" account state updated successfully.`);
-      fetchUsers();
+      fetchUsers(currentPage, debouncedQuery);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to update activation status');
     }
@@ -76,20 +99,27 @@ const ReaderDirectoryPage = () => {
     setError('');
 
     try {
-      await apiClient.post(`/${selectedUser.id}/roles`, { roles: assignedRoles });
+      await apiClient.post(`/users/${selectedUser.id}/roles`, { roles: assignedRoles });
       setMessage(`Roles successfully assigned to user "${selectedUser.username}".`);
       setSelectedUser(null);
-      fetchUsers();
+      fetchUsers(currentPage, debouncedQuery);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to assign roles');
     }
   };
 
-  const filteredUsers = users.filter(u => 
-    u.username.toLowerCase().includes(query.toLowerCase()) ||
-    u.email.toLowerCase().includes(query.toLowerCase()) ||
-    (u.location && u.location.toLowerCase().includes(query.toLowerCase()))
-  );
+  // Build page window: show up to 5 pages around current
+  const getPageNumbers = () => {
+    const delta = 2;
+    const range = [];
+    const start = Math.max(0, currentPage - delta);
+    const end = Math.min(totalPages - 1, currentPage + delta);
+    for (let i = start; i <= end; i++) range.push(i);
+    return range;
+  };
+
+  const firstItem = totalElements === 0 ? 0 : currentPage * PAGE_SIZE + 1;
+  const lastItem = Math.min((currentPage + 1) * PAGE_SIZE, totalElements);
 
   return (
     <DashboardLayout>
@@ -113,14 +143,14 @@ const ReaderDirectoryPage = () => {
           </div>
         )}
 
-        {/* Filter bar */}
+        {/* Search bar */}
         <div className="card" style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '2.5rem' }}>
           <div style={{ flexGrow: 1, position: 'relative' }}>
             <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'hsl(var(--text-muted))' }} />
-            <input 
-              type="text" 
-              className="form-control" 
-              style={{ paddingLeft: '2.5rem' }} 
+            <input
+              type="text"
+              className="form-control"
+              style={{ paddingLeft: '2.5rem' }}
               placeholder="Search users by username, email, or geographical location..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -128,92 +158,134 @@ const ReaderDirectoryPage = () => {
           </div>
         </div>
 
-        {/* Table list */}
+        {/* Table */}
         {loading ? (
           <div style={{ color: 'hsl(var(--text-muted))', textAlign: 'center', padding: '5rem' }}>
             Retrieving reader directory...
           </div>
-        ) : filteredUsers.length === 0 ? (
+        ) : users.length === 0 ? (
           <div className="card" style={{ textAlign: 'center', padding: '3rem', color: 'hsl(var(--text-muted))' }}>
             No registered users found.
           </div>
         ) : (
-          <div className="table-container">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Username</th>
-                  <th>Email</th>
-                  <th>Location</th>
-                  <th>Age</th>
-                  <th>Roles</th>
-                  <th>Verification</th>
-                  <th>Account Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.map((u) => (
-                  <tr key={u.id}>
-                    <td style={{ fontWeight: 600 }}>{u.username}</td>
-                    <td>{u.email}</td>
-                    <td>{u.location || '-'}</td>
-                    <td>{u.age || '-'}</td>
-                    <td>
-                      <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
-                        {u.roles.map((r, i) => (
-                          <span key={i} className="badge badge-primary" style={{ fontSize: '0.6rem' }}>
-                            {r.replace('ROLE_', '')}
+          <>
+            <div className="table-container">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Location</th>
+                    <th>Age</th>
+                    <th>Roles</th>
+                    <th>Verification</th>
+                    <th>Account Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((u) => (
+                    <tr key={u.id}>
+                      <td style={{ fontWeight: 600 }}>{u.username}</td>
+                      <td>{u.email}</td>
+                      <td>{u.location || '-'}</td>
+                      <td>{u.age || '-'}</td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
+                          {u.roles.map((r, i) => (
+                            <span key={i} className="badge badge-primary" style={{ fontSize: '0.6rem' }}>
+                              {r.replace('ROLE_', '')}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td>
+                        {u.emailVerified ? (
+                          <span className="badge badge-success" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.15rem' }}>
+                            <Check size={10} /><span>Verified</span>
                           </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td>
-                      {u.emailVerified ? (
-                        <span className="badge badge-success" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.15rem' }}>
-                          <Check size={10} />
-                          <span>Verified</span>
+                        ) : (
+                          <span className="badge badge-warning" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.15rem' }}>
+                            <X size={10} /><span>Pending</span>
+                          </span>
+                        )}
+                      </td>
+                      <td>
+                        <span className={`badge ${u.isActive ? 'badge-success' : 'badge-danger'}`}>
+                          {u.isActive ? 'Active' : 'Suspended'}
                         </span>
-                      ) : (
-                        <span className="badge badge-warning" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.15rem' }}>
-                          <X size={10} />
-                          <span>Pending</span>
-                        </span>
-                      )}
-                    </td>
-                    <td>
-                      <span className={`badge ${u.isActive ? 'badge-success' : 'badge-danger'}`}>
-                        {u.isActive ? 'Active' : 'Suspended'}
-                      </span>
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                        <button 
-                          onClick={() => handleToggleActive(u.id, u.isActive, u.username)}
-                          className="btn btn-secondary"
-                          style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
-                        >
-                          {u.isActive ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
-                          <span>{u.isActive ? 'Suspend' : 'Activate'}</span>
-                        </button>
-
-                        {isSuperAdmin && (
-                          <button 
-                            onClick={() => handleOpenRoles(u)}
-                            className="btn btn-primary"
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                          <button
+                            onClick={() => handleToggleActive(u.id, u.isActive, u.username)}
+                            className="btn btn-secondary"
                             style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
                           >
-                            <Shield size={12} />
-                            <span>Roles</span>
+                            {u.isActive ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
+                            <span>{u.isActive ? 'Suspend' : 'Activate'}</span>
                           </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+
+                          {isSuperAdmin && (
+                            <button
+                              onClick={() => handleOpenRoles(u)}
+                              className="btn btn-primary"
+                              style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+                            >
+                              <Shield size={12} />
+                              <span>Roles</span>
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination controls */}
+            {totalPages > 1 && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                {/* Info */}
+                <span style={{ fontSize: '0.85rem', color: 'hsl(var(--text-muted))' }}>
+                  Showing {firstItem}–{lastItem} of {totalElements} users
+                </span>
+
+                {/* Page buttons */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <button
+                    className="btn btn-secondary"
+                    style={{ padding: '0.4rem 0.6rem', display: 'inline-flex', alignItems: 'center' }}
+                    onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
+                    disabled={currentPage === 0}
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+
+                  {getPageNumbers().map(n => (
+                    <button
+                      key={n}
+                      onClick={() => setCurrentPage(n)}
+                      className={n === currentPage ? 'btn btn-primary' : 'btn btn-secondary'}
+                      style={{ padding: '0.4rem 0.75rem', minWidth: '2.2rem', fontSize: '0.85rem' }}
+                    >
+                      {n + 1}
+                    </button>
+                  ))}
+
+                  <button
+                    className="btn btn-secondary"
+                    style={{ padding: '0.4rem 0.6rem', display: 'inline-flex', alignItems: 'center' }}
+                    onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
+                    disabled={currentPage >= totalPages - 1}
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -231,7 +303,7 @@ const ReaderDirectoryPage = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
                 {['ROLE_SUPER_ADMIN', 'ROLE_ADMIN', 'ROLE_LIBRARIAN', 'ROLE_MEMBER'].map(role => (
                   <label key={role} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', background: 'hsl(var(--bg))', border: '1px solid hsl(var(--border))', borderRadius: '8px', cursor: 'pointer' }}>
-                    <input 
+                    <input
                       type="checkbox"
                       checked={assignedRoles.includes(role)}
                       onChange={() => handleRoleCheckboxChange(role)}

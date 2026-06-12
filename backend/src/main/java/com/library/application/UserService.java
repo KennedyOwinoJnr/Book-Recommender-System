@@ -4,6 +4,10 @@ import com.library.domain.Role;
 import com.library.domain.User;
 import com.library.infrastructure.RoleRepository;
 import com.library.infrastructure.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -25,6 +29,11 @@ public class UserService {
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    public Page<User> searchUsers(String search, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "username"));
+        return userRepository.searchUsers(search == null ? "" : search.trim(), pageable);
     }
 
     public User getUserById(Long id) {

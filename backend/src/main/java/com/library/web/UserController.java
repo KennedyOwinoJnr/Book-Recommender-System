@@ -2,6 +2,7 @@ package com.library.web;
 
 import com.library.application.UserService;
 import com.library.domain.User;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -42,9 +43,13 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
-    public ResponseEntity<List<UserDto>> getAllUsers() {
-        List<User> users = userService.getAllUsers();
-        return ResponseEntity.ok(users.stream().map(Mapper::toDto).collect(Collectors.toList()));
+    public ResponseEntity<Page<UserDto>> getUsers(
+            @RequestParam(defaultValue = "") String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size) {
+        Page<UserDto> result = userService.searchUsers(search, page, size)
+                .map(Mapper::toDto);
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/{id}/activate")
