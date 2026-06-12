@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: library_user
       POSTGRES_PASSWORD: library_pass
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -20,7 +20,7 @@ services:
     image: axllent/mailpit:v1.15
     container_name: library-mailpit
     ports:
-      - "8025:8025" # Web UI
+      - "2041:8025" # Web UI
       - "1025:1025" # SMTP Port
     environment:
       MP_MAX_MESSAGES: 500
@@ -32,7 +32,7 @@ services:
       dockerfile: Dockerfile
     container_name: library-ml-service
     ports:
-      - "5000:5000"
+      - "2043:5000"
     volumes:
       - ./Deployment:/app/models:ro # Bind mount models from original folder to avoid duplicating large pkl files
     environment:
@@ -49,7 +49,7 @@ services:
       dockerfile: Dockerfile
     container_name: library-backend
     ports:
-      - "8080:8080"
+      - "2042:8080"
     volumes:
       - ./data:/app/data:ro # Bind mount original CSVs for database seeding
     environment:
@@ -62,7 +62,7 @@ services:
       - SPRING_MAIL_USERNAME=
       - SPRING_MAIL_PASSWORD=
       - ML_SERVICE_URL=http://ml-service:5000
-      - JWT_SECRET=5J2m9sQ4v8y/B?E(H+MbQeThWmYq3t6w9z$C&F)J@NcRfUjXn2r5u7x!A%D*G-Ka
+      - JWT_SECRET=dGhpcyBpcyBhIHZlcnkgbG9uZyBhbmQgc2VjdXJlIGJhc2U2NCBlbmNvZGVkIHNlY3JldCBrZXkgZm9yIEpXVCBITUFDU0hBNTEy
       - JWT_EXPIRY_MS=86400000
       - INITIAL_ADMIN_EMAIL=admin@library.com
       - INITIAL_ADMIN_PASSWORD=Admin@123
@@ -81,7 +81,7 @@ services:
       dockerfile: Dockerfile
     container_name: library-frontend
     ports:
-      - "3000:80"
+      - "2040:80"
     depends_on:
       - backend
 

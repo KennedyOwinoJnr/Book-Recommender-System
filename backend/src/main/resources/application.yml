@@ -49,7 +49,7 @@ spring:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:5J2m9sQ4v8y/B?E(H+MbQeThWmYq3t6w9z$C&F)J@NcRfUjXn2r5u7x!A%D*G-Ka}
+    secret: ${JWT_SECRET:dGhpcyBpcyBhIHZlcnkgbG9uZyBhbmQgc2VjdXJlIGJhc2U2NCBlbmNvZGVkIHNlY3JldCBrZXkgZm9yIEpXVCBITUFDU0hBNTEy}
     expiration-ms: ${JWT_EXPIRY_MS:86400000} # 24 hours
   ml-service-url: ${ML_SERVICE_URL:http://localhost:5000}
   csv-data-path: ${CSV_DATA_PATH:/app/data} # Set inside container

@@ -22,18 +22,10 @@
         <jjwt.version>0.11.5</jjwt.version>
         <springdoc.version>2.3.0</springdoc.version>
         <commons-csv.version>1.10.0</commons-csv.version>
+        <flyway.version>10.10.0</flyway.version>
     </properties>
 
-    <dependencies>
-        <!-- Spring Boot Starters -->
-        <artifactId>spring-boot-starter-web</artifactId>
-        <groupId>org.springframework.boot</groupId>
-    </dependencies>
-    <dependencyManagement>
-        <dependencies>
-            <!-- Included by parent but explicitly declared for clarity if needed -->
-        </dependencies>
-    </dependencyManagement>
+
 
     <dependencies>
         <dependency>
@@ -74,6 +66,7 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-database-postgresql</artifactId>
+            <version>${flyway.version}</version>
         </dependency>
 
         <!-- Authentication (JJWT) -->
