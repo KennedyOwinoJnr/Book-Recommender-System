@@ -32,6 +32,7 @@ public class BookService {
         this.auditLogService = auditLogService;
     }
 
+    @Transactional(readOnly = true)
     public Page<Book> getBooks(String query, String category, Pageable pageable) {
         if (query != null && !query.trim().isEmpty() && category != null && !category.trim().isEmpty()) {
             return bookRepository.searchByCategory(query.trim(), category.trim(), pageable);
@@ -43,13 +44,15 @@ public class BookService {
         return bookRepository.findAll(pageable);
     }
 
+    @Transactional(readOnly = true)
     public Book getBookById(Long id) {
-        return bookRepository.findById(id)
+        return bookRepository.findByIdWithCategories(id)
                 .orElseThrow(() -> new IllegalArgumentException("Book not found with id: " + id));
     }
 
+    @Transactional(readOnly = true)
     public Book getBookByIsbn(String isbn) {
-        return bookRepository.findByIsbn(isbn)
+        return bookRepository.findByIsbnWithCategories(isbn)
                 .orElseThrow(() -> new IllegalArgumentException("Book not found with isbn: " + isbn));
     }
 
@@ -126,10 +129,12 @@ public class BookService {
         return saved;
     }
 
+    @Transactional(readOnly = true)
     public Double getBookAverageRating(Long bookId) {
         return ratingRepository.getAverageRating(bookId);
     }
 
+    @Transactional(readOnly = true)
     public List<Category> getAllCategories() {
         return categoryRepository.findAll();
     }
