@@ -74,6 +74,14 @@ const DashboardLayout = ({ children }) => {
             <span>My Reservations</span>
           </Link>
 
+          <Link 
+            to="/settings" 
+            className={`sidebar-link ${location.pathname === '/settings' ? 'active' : ''}`}
+          >
+            <Settings size={18} />
+            <span>Account Settings</span>
+          </Link>
+
           {/* Librarian Options */}
           {isLibrarian && (
             <>

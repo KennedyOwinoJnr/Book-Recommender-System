@@ -32,13 +32,26 @@ public class UserController {
     public ResponseEntity<UserDto> updateProfile(@AuthenticationPrincipal UserDetails userDetails,
                                                  @RequestBody Map<String, Object> body) {
         User user = userService.getUserByUsername(userDetails.getUsername());
+        String email = (String) body.get("email");
         String firstName = (String) body.get("firstName");
         String lastName = (String) body.get("lastName");
         String location = (String) body.get("location");
         Integer age = body.get("age") != null ? ((Number) body.get("age")).intValue() : null;
 
-        User updated = userService.updateUserProfile(user.getId(), firstName, lastName, location, age);
+        User updated = userService.updateUserProfile(user.getId(), email, firstName, lastName, location, age);
         return ResponseEntity.ok(Mapper.toDto(updated));
+    }
+
+    @PutMapping("/me/password")
+    public ResponseEntity<Map<String, String>> changePassword(@AuthenticationPrincipal UserDetails userDetails,
+                                                              @RequestBody Map<String, String> body) {
+        User user = userService.getUserByUsername(userDetails.getUsername());
+        String newPassword = body.get("password");
+        if (newPassword == null || newPassword.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Password cannot be empty"));
+        }
+        userService.changePassword(user.getId(), newPassword);
+        return ResponseEntity.ok(Map.of("message", "Password updated successfully"));
     }
 
     @GetMapping

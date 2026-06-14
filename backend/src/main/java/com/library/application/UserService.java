@@ -4,6 +4,7 @@ import com.library.domain.Role;
 import com.library.domain.User;
 import com.library.infrastructure.RoleRepository;
 import com.library.infrastructure.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,11 +21,13 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final AuditLogService auditLogService;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, RoleRepository roleRepository, AuditLogService auditLogService) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, AuditLogService auditLogService, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.auditLogService = auditLogService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<User> getAllUsers() {
@@ -47,8 +50,18 @@ public class UserService {
     }
 
     @Transactional
-    public User updateUserProfile(Long id, String firstName, String lastName, String location, Integer age) {
+    public User updateUserProfile(Long id, String email, String firstName, String lastName, String location, Integer age) {
         User user = getUserById(id);
+        
+        if (email != null && !email.trim().isEmpty() && !email.equalsIgnoreCase(user.getEmail())) {
+            String trimmedEmail = email.trim();
+            if (userRepository.existsByEmail(trimmedEmail)) {
+                throw new IllegalArgumentException("Email Address is already in use by another account!");
+            }
+            user.setEmail(trimmedEmail);
+            user.setEmailVerified(false);
+        }
+        
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setLocation(location);
@@ -83,6 +96,15 @@ public class UserService {
         
         auditLogService.log(actorId, actorEmail, "USER_ROLES_ASSIGN", "User", updated.getId(), 
                 "Assigned roles: " + String.join(", ", roleNames));
+        return updated;
+    }
+
+    @Transactional
+    public User changePassword(Long id, String newPassword) {
+        User user = getUserById(id);
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        User updated = userRepository.save(user);
+        auditLogService.log(updated.getId(), updated.getEmail(), "PASSWORD_CHANGE", "User", updated.getId(), "User password updated manually");
         return updated;
     }
 }

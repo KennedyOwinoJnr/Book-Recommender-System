@@ -16,6 +16,7 @@ import MemberDashboard from './pages/MemberDashboard';
 import CatalogPage from './pages/CatalogPage';
 import MyBorrowingsPage from './pages/MyBorrowingsPage';
 import MyReservationsPage from './pages/MyReservationsPage';
+import SettingsPage from './pages/SettingsPage';
 import InventoryMasterPage from './pages/InventoryMasterPage';
 import CirculationDeskPage from './pages/CirculationDeskPage';
 import ReaderDirectoryPage from './pages/ReaderDirectoryPage';
@@ -67,6 +68,14 @@ const App = () => {
           element={
             <PrivateRoute>
               <MyReservationsPage />
+            </PrivateRoute>
+          } 
+        />
+        <Route 
+          path="/settings" 
+          element={
+            <PrivateRoute>
+              <SettingsPage />
             </PrivateRoute>
           } 
         />
