@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, ChevronLeft, ChevronRight, Bookmark, History, Star } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import DashboardLayout from '../layouts/DashboardLayout';
 import apiClient from '../api/client';
 
 const CatalogPage = () => {
+  const navigate = useNavigate();
   const [books, setBooks] = useState([]);
   const [categories, setCategories] = useState([]);
   
@@ -83,10 +86,12 @@ const CatalogPage = () => {
 
     try {
       await apiClient.post('/borrowings', { bookId: bookDetails.id });
-      setActionMessage('Book successfully borrowed! Please collect it from circulation desk.');
-      // Refresh current page of catalog to update stock status
-      fetchBooks();
-      handleOpenBookDetails(bookDetails.id);
+      setSelectedBookId(null);
+      navigate('/my-borrowings', { 
+        state: { 
+          message: `Successfully borrowed "${bookDetails.title}"! Please collect it from the circulation desk.` 
+        } 
+      });
     } catch (err) {
       setActionError(err.response?.data?.message || 'Failed to borrow book');
     }
@@ -243,7 +248,7 @@ const CatalogPage = () => {
       </div>
 
       {/* Book Details Modal */}
-      {selectedBookId && (
+      {selectedBookId && createPortal(
         <div className="modal-overlay" onClick={() => setSelectedBookId(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <button className="close-btn" onClick={() => setSelectedBookId(null)}>&times;</button>
@@ -327,7 +332,8 @@ const CatalogPage = () => {
               </div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </DashboardLayout>
   );

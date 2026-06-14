@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { History, Calendar, Star, AlertTriangle } from 'lucide-react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import apiClient from '../api/client';
@@ -6,9 +7,15 @@ import apiClient from '../api/client';
 const MyBorrowingsPage = () => {
   const [borrowings, setBorrowings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     fetchMyBorrowings();
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+      window.history.replaceState({}, document.title);
+    }
   }, []);
 
   const fetchMyBorrowings = async () => {
@@ -45,6 +52,24 @@ const MyBorrowingsPage = () => {
           </h1>
           <p style={{ color: 'hsl(var(--text-muted))' }}>Track your active loans, due dates, and past checkout transactions.</p>
         </div>
+
+        {successMessage && (
+          <div style={{
+            background: 'hsla(142, 70%, 45%, 0.1)',
+            color: 'hsl(var(--success))',
+            padding: '1rem',
+            borderRadius: '12px',
+            marginBottom: '2rem',
+            border: '1px solid hsla(142, 70%, 45%, 0.25)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            fontSize: '0.95rem'
+          }}>
+            <span style={{ fontSize: '1.25rem' }}>✓</span>
+            <span>{successMessage}</span>
+          </div>
+        )}
 
         {loading ? (
           <div style={{ color: 'hsl(var(--text-muted))', textAlign: 'center', padding: '5rem' }}>

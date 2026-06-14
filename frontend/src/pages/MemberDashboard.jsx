@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Sparkles, Star, History, Bookmark, Info, HelpCircle } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import DashboardLayout from '../layouts/DashboardLayout';
 import apiClient from '../api/client';
 
 const MemberDashboard = () => {
+  const navigate = useNavigate();
   const [hybridRecs, setHybridRecs] = useState([]);
   const [collabRecs, setCollabRecs] = useState([]);
   const [popularBooks, setPopularBooks] = useState([]);
@@ -74,11 +77,12 @@ const MemberDashboard = () => {
 
     try {
       await apiClient.post('/borrowings', { bookId: bookDetails.id });
-      setActionMessage('Book successfully borrowed! Please collect it from circulation desk.');
-      // Refresh dashboard data
-      fetchDashboardData();
-      // Re-fetch details to update stock
-      handleOpenBookDetails(bookDetails.title);
+      setSelectedBook(null);
+      navigate('/my-borrowings', { 
+        state: { 
+          message: `Successfully borrowed "${bookDetails.title}"! Please collect it from the circulation desk.` 
+        } 
+      });
     } catch (err) {
       setActionError(err.response?.data?.message || 'Failed to borrow book');
     }
@@ -249,7 +253,7 @@ const MemberDashboard = () => {
       </div>
 
       {/* Book Details Modal */}
-      {selectedBook && (
+      {selectedBook && createPortal(
         <div className="modal-overlay" onClick={() => setSelectedBook(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <button className="close-btn" onClick={() => setSelectedBook(null)}>&times;</button>
@@ -336,7 +340,8 @@ const MemberDashboard = () => {
               </div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </DashboardLayout>
   );

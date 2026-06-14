@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Database, Plus, Edit, Trash2, Search, X } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import DashboardLayout from '../layouts/DashboardLayout';
 import apiClient from '../api/client';
 
@@ -248,7 +249,7 @@ const InventoryMasterPage = () => {
       </div>
 
       {/* Add / Edit Modal */}
-      {showModal && (
+      {showModal && createPortal(
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-content" style={{ maxWidth: '700px' }} onClick={(e) => e.stopPropagation()}>
             <button className="close-btn" onClick={() => setShowModal(false)}>&times;</button>
@@ -391,7 +392,8 @@ const InventoryMasterPage = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </DashboardLayout>
   );

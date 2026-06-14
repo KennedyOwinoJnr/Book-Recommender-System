@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Users, Shield, Check, X, Search, ToggleLeft, ToggleRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import DashboardLayout from '../layouts/DashboardLayout';
 import apiClient from '../api/client';
 
@@ -290,7 +291,7 @@ const ReaderDirectoryPage = () => {
       </div>
 
       {/* Role Assignment Modal */}
-      {selectedUser && (
+      {selectedUser && createPortal(
         <div className="modal-overlay" onClick={() => setSelectedUser(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <button className="close-btn" onClick={() => setSelectedUser(null)}>&times;</button>
@@ -332,7 +333,8 @@ const ReaderDirectoryPage = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </DashboardLayout>
   );
