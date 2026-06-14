@@ -67,6 +67,7 @@ services:
       - JWT_EXPIRY_MS=86400000
       - INITIAL_ADMIN_EMAIL=admin@library.com
       - INITIAL_ADMIN_PASSWORD=Admin@123
+      - FRONTEND_URL=http://localhost:2040
     depends_on:
       postgres:
         condition: service_healthy

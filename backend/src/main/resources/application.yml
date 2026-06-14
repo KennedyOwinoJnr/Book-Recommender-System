@@ -53,6 +53,7 @@ app:
     expiration-ms: ${JWT_EXPIRY_MS:86400000} # 24 hours
   ml-service-url: ${ML_SERVICE_URL:http://localhost:5000}
   csv-data-path: ${CSV_DATA_PATH:/app/data} # Set inside container
+  frontend-url: ${FRONTEND_URL:${FRONTENDURL:http://localhost:3000}}
   initial-admin:
     email: ${INITIAL_ADMIN_EMAIL:admin@library.com}
     password: ${INITIAL_ADMIN_PASSWORD:Admin@123}
