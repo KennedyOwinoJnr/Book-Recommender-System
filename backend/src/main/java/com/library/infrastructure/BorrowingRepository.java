@@ -32,4 +32,6 @@ public interface BorrowingRepository extends JpaRepository<Borrowing, Long> {
 
     @Query("SELECT COUNT(b) FROM Borrowing b WHERE b.user.id = :userId AND b.status IN ('ACTIVE', 'OVERDUE')")
     long countActiveByUserId(@Param("userId") Long userId);
+
+    long countByBookIdAndStatusIn(Long bookId, List<String> statuses);
 }

@@ -7,6 +7,8 @@ import com.library.domain.User;
 import com.library.infrastructure.BookRatingRepository;
 import com.library.infrastructure.BookRepository;
 import com.library.infrastructure.CategoryRepository;
+import com.library.infrastructure.BorrowingRepository;
+import com.library.infrastructure.ReservationRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,13 +25,18 @@ public class BookService {
     private final CategoryRepository categoryRepository;
     private final BookRatingRepository ratingRepository;
     private final AuditLogService auditLogService;
+    private final BorrowingRepository borrowingRepository;
+    private final ReservationRepository reservationRepository;
 
     public BookService(BookRepository bookRepository, CategoryRepository categoryRepository,
-                       BookRatingRepository ratingRepository, AuditLogService auditLogService) {
+                       BookRatingRepository ratingRepository, AuditLogService auditLogService,
+                       BorrowingRepository borrowingRepository, ReservationRepository reservationRepository) {
         this.bookRepository = bookRepository;
         this.categoryRepository = categoryRepository;
         this.ratingRepository = ratingRepository;
         this.auditLogService = auditLogService;
+        this.borrowingRepository = borrowingRepository;
+        this.reservationRepository = reservationRepository;
     }
 
     @Transactional(readOnly = true)
@@ -65,6 +72,11 @@ public class BookService {
         Set<Category> categorySet = resolveCategories(categories);
         bookData.setCategories(categorySet);
 
+        // Dynamically calculate stock available: stockTotal - (activeLoans + activeHolds)
+        long activeLoans = bookData.getId() != null ? borrowingRepository.countByBookIdAndStatusIn(bookData.getId(), List.of("ACTIVE", "OVERDUE")) : 0;
+        long activeHolds = bookData.getId() != null ? reservationRepository.countByBookIdAndStatus(bookData.getId(), "FULFILLED") : 0;
+        bookData.setStockAvailable(Math.max(0, bookData.getStockTotal() - (int)(activeLoans + activeHolds)));
+
         Book saved = bookRepository.save(bookData);
         auditLogService.log(actorId, actorEmail, "BOOK_CREATE", "Book", saved.getId(), 
                 "Book created: " + saved.getTitle() + " (ISBN: " + saved.getIsbn() + ")");
@@ -88,9 +100,10 @@ public class BookService {
         existing.setImageUrlLarge(bookData.getImageUrlLarge());
         existing.setStockTotal(bookData.getStockTotal());
         
-        // Adjust stock available based on changes to total stock
-        int difference = bookData.getStockTotal() - existing.getStockTotal();
-        existing.setStockAvailable(Math.max(0, existing.getStockAvailable() + difference));
+        // Dynamically calculate stock available: stockTotal - (activeLoans + activeHolds)
+        long activeLoans = borrowingRepository.countByBookIdAndStatusIn(id, List.of("ACTIVE", "OVERDUE"));
+        long activeHolds = reservationRepository.countByBookIdAndStatus(id, "FULFILLED");
+        existing.setStockAvailable(Math.max(0, bookData.getStockTotal() - (int)(activeLoans + activeHolds)));
 
         if (categories != null) {
             Set<Category> categorySet = resolveCategories(categories);

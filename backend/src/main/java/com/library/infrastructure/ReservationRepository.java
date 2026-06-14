@@ -19,4 +19,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     @Query("SELECT r FROM Reservation r JOIN FETCH r.user JOIN FETCH r.book WHERE r.status = 'PENDING' AND r.expiresAt < CURRENT_TIMESTAMP")
     List<Reservation> findExpiredReservations();
+
+    List<Reservation> findByUserIdAndBookIdAndStatus(Long userId, Long bookId, String status);
+
+    long countByBookIdAndStatus(Long bookId, String status);
 }

@@ -52,10 +52,6 @@ public class BorrowingService {
             throw new IllegalStateException("Book is currently out of stock. You can place a reservation instead.");
         }
 
-        // 3. Decrement availability stock
-        book.setStockAvailable(book.getStockAvailable() - 1);
-        bookRepository.save(book);
-
         // 4. Create borrowing entry (default 14 days loan period)
         Instant now = Instant.now();
         Instant dueDate = now.plus(14, ChronoUnit.DAYS);
@@ -70,6 +66,20 @@ public class BorrowingService {
                 .build();
 
         Borrowing saved = borrowingRepository.save(borrowing);
+
+        // Transition any FULFILLED reservation for this user and book to COMPLETED
+        List<Reservation> userHolds = reservationRepository.findByUserIdAndBookIdAndStatus(user.getId(), book.getId(), "FULFILLED");
+        for (Reservation res : userHolds) {
+            res.setStatus("COMPLETED");
+            reservationRepository.save(res);
+        }
+
+        // Recalculate book stock dynamically: stockTotal - (activeLoans + activeHolds)
+        long activeLoans = borrowingRepository.countByBookIdAndStatusIn(book.getId(), List.of("ACTIVE", "OVERDUE"));
+        long activeHolds = reservationRepository.countByBookIdAndStatus(book.getId(), "FULFILLED");
+        book.setStockAvailable(Math.max(0, book.getStockTotal() - (int)(activeLoans + activeHolds)));
+        bookRepository.save(book);
+
         auditLogService.log(user.getId(), user.getEmail(), "BOOK_BORROW", "Book", book.getId(), 
                 "Borrowed book: " + book.getTitle() + " (Borrowing ID: " + saved.getId() + ")");
         return saved;
@@ -95,16 +105,19 @@ public class BorrowingService {
         } else {
             borrowing.setStatus("RETURNED");
         }
+        Borrowing saved = borrowingRepository.save(borrowing);
 
-        // Increment stock
         Book book = borrowing.getBook();
-        book.setStockAvailable(book.getStockAvailable() + 1);
-        bookRepository.save(book);
 
         // Trigger reservation check to see if we can fulfill a pending hold
         checkAndFulfillReservation(book);
 
-        Borrowing saved = borrowingRepository.save(borrowing);
+        // Recalculate book stock dynamically: stockTotal - (activeLoans + activeHolds)
+        long activeLoans = borrowingRepository.countByBookIdAndStatusIn(book.getId(), List.of("ACTIVE", "OVERDUE"));
+        long activeHolds = reservationRepository.countByBookIdAndStatus(book.getId(), "FULFILLED");
+        book.setStockAvailable(Math.max(0, book.getStockTotal() - (int)(activeLoans + activeHolds)));
+        bookRepository.save(book);
+
         auditLogService.log(actorId, actorEmail, "BOOK_RETURN", "Book", book.getId(), 
                 "Returned book: " + book.getTitle() + " (Borrowing ID: " + saved.getId() + ", Fine: $" + fine + ")");
         return saved;
@@ -160,10 +173,6 @@ public class BorrowingService {
             Reservation res = pending.get(0);
             res.setStatus("FULFILLED");
             reservationRepository.save(res);
-
-            // Reserve the book item for this user
-            book.setStockAvailable(book.getStockAvailable() - 1);
-            bookRepository.save(book);
 
             // In production, we'd send an email to notify user they have 48 hours to collect
             auditLogService.log(res.getUser().getId(), res.getUser().getEmail(), "RESERVATION_FULFILL", "Book", book.getId(), 
