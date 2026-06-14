@@ -104,9 +104,12 @@ const CatalogPage = () => {
 
     try {
       await apiClient.post('/reservations', { bookId: bookDetails.id });
-      setActionMessage('Reservation placed successfully! You will be notified when stock returns.');
-      fetchBooks();
-      handleOpenBookDetails(bookDetails.id);
+      setSelectedBookId(null);
+      navigate('/my-reservations', { 
+        state: { 
+          message: `Successfully reserved "${bookDetails.title}"! You will be notified when stock returns.` 
+        } 
+      });
     } catch (err) {
       setActionError(err.response?.data?.message || 'Failed to reserve book');
     }

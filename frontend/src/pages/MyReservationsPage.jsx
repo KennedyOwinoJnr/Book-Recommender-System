@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Bookmark, Calendar, Trash2 } from 'lucide-react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import apiClient from '../api/client';
@@ -7,9 +8,14 @@ const MyReservationsPage = () => {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
+  const location = useLocation();
 
   useEffect(() => {
     fetchMyReservations();
+    if (location.state?.message) {
+      setMessage(location.state.message);
+      window.history.replaceState({}, document.title);
+    }
   }, []);
 
   const fetchMyReservations = async () => {
@@ -60,8 +66,20 @@ const MyReservationsPage = () => {
         </div>
 
         {message && (
-          <div style={{ background: 'hsla(142, 70%, 45%, 0.1)', color: 'hsl(var(--success))', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1.5rem', fontSize: '0.85rem' }}>
-            {message}
+          <div style={{
+            background: 'hsla(142, 70%, 45%, 0.1)',
+            color: 'hsl(var(--success))',
+            padding: '1rem',
+            borderRadius: '12px',
+            marginBottom: '2rem',
+            border: '1px solid hsla(142, 70%, 45%, 0.25)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            fontSize: '0.95rem'
+          }}>
+            <span style={{ fontSize: '1.25rem' }}>✓</span>
+            <span>{message}</span>
           </div>
         )}
 

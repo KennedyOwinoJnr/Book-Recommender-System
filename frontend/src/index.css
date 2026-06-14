@@ -435,3 +435,26 @@ h1, h2, h3, h4, h5, h6 {
   cursor: pointer;
   font-size: 1.5rem;
 }
+
+/* Responsive adjustments for recommendations */
+@media (max-width: 768px) {
+  .rec-item {
+    width: 140px;
+  }
+  .book-cover {
+    height: 190px;
+  }
+}
+
+@media (max-width: 480px) {
+  .rec-carousel {
+    gap: 1rem;
+    padding-bottom: 1rem;
+  }
+  .rec-item {
+    width: 110px;
+  }
+  .book-cover {
+    height: 150px;
+  }
+}

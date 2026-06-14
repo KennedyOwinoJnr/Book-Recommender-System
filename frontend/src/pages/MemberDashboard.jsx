@@ -14,6 +14,11 @@ const MemberDashboard = () => {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Show all (Show More) toggle states
+  const [showAllHybrid, setShowAllHybrid] = useState(false);
+  const [showAllCollab, setShowAllCollab] = useState(false);
+  const [showAllPopular, setShowAllPopular] = useState(false);
+
   // Modal State
   const [selectedBook, setSelectedBook] = useState(null);
   const [bookDetails, setBookDetails] = useState(null);
@@ -21,19 +26,43 @@ const MemberDashboard = () => {
   const [actionMessage, setActionMessage] = useState('');
   const [actionError, setActionError] = useState('');
 
+  const [defaultLimit, setDefaultLimit] = useState(5);
+
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   useEffect(() => {
     fetchDashboardData();
   }, []);
 
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobile = window.innerWidth <= 480;
+      const isTablet = window.innerWidth <= 768;
+      
+      const sidebarWidth = 260; 
+      const padding = isMobile ? 32 : (isTablet ? 48 : 80);
+      const gap = isMobile ? 16 : 24;
+      const cardWidth = isMobile ? 110 : (isTablet ? 140 : 180);
+      
+      const availableWidth = window.innerWidth - sidebarWidth - padding;
+      const cardSpace = cardWidth + gap;
+      
+      const count = Math.max(5, Math.floor(availableWidth / cardSpace));
+      setDefaultLimit(count);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
       const [hybridRes, collabRes, popularRes, borrowRes, reservRes] = await Promise.all([
-        apiClient.get('/recommendations/hybrid?limit=5'),
-        apiClient.get('/recommendations/collaborative?limit=5'),
-        apiClient.get('/recommendations/popular?limit=5'),
+        apiClient.get('/recommendations/hybrid?limit=20'),
+        apiClient.get('/recommendations/collaborative?limit=20'),
+        apiClient.get('/recommendations/popular?limit=20'),
         apiClient.get('/borrowings/me/active'),
         apiClient.get('/reservations/me')
       ]);
@@ -95,9 +124,12 @@ const MemberDashboard = () => {
 
     try {
       await apiClient.post('/reservations', { bookId: bookDetails.id });
-      setActionMessage('Reservation placed successfully! You will be notified when stock returns.');
-      fetchDashboardData();
-      handleOpenBookDetails(bookDetails.title);
+      setSelectedBook(null);
+      navigate('/my-reservations', { 
+        state: { 
+          message: `Successfully reserved "${bookDetails.title}"! You will be notified when stock returns.` 
+        } 
+      });
     } catch (err) {
       setActionError(err.response?.data?.message || 'Failed to reserve book');
     }
@@ -116,6 +148,10 @@ const MemberDashboard = () => {
       setActionError(err.response?.data?.message || 'Failed to submit rating');
     }
   };
+
+  const visibleHybrid = showAllHybrid ? hybridRecs : hybridRecs.slice(0, defaultLimit);
+  const visibleCollab = showAllCollab ? collabRecs : collabRecs.slice(0, defaultLimit);
+  const visiblePopular = showAllPopular ? popularBooks : popularBooks.slice(0, defaultLimit);
 
   return (
     <DashboardLayout>
@@ -173,12 +209,23 @@ const MemberDashboard = () => {
           <>
             {/* 1. Hybrid Picks */}
             <section style={{ marginBottom: '3rem' }}>
-              <h2 style={{ fontSize: '1.4rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Sparkles size={20} className="text-secondary" style={{ color: 'hsl(var(--secondary))' }} />
-                <span>Top Picks For You (Hybrid ML)</span>
-              </h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <h2 style={{ fontSize: '1.4rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Sparkles size={20} className="text-secondary" style={{ color: 'hsl(var(--secondary))' }} />
+                  <span>Top Picks For You (Hybrid ML)</span>
+                </h2>
+                {hybridRecs.length > defaultLimit && (
+                  <button 
+                    className="btn btn-secondary" 
+                    style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
+                    onClick={() => setShowAllHybrid(!showAllHybrid)}
+                  >
+                    {showAllHybrid ? 'Show Less' : 'Show More'}
+                  </button>
+                )}
+              </div>
               <div className="rec-carousel">
-                {hybridRecs.map((rec, idx) => (
+                {visibleHybrid.map((rec, idx) => (
                   <div 
                     key={idx} 
                     className="rec-item card" 
@@ -199,12 +246,23 @@ const MemberDashboard = () => {
 
             {/* 2. Collaborative picks */}
             <section style={{ marginBottom: '3rem' }}>
-              <h2 style={{ fontSize: '1.4rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Star size={20} style={{ color: 'hsl(var(--primary))' }} />
-                <span>We Think You'll Love These (Collaborative Filtering)</span>
-              </h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <h2 style={{ fontSize: '1.4rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Star size={20} style={{ color: 'hsl(var(--primary))' }} />
+                  <span>We Think You'll Love These (Collaborative Filtering)</span>
+                </h2>
+                {collabRecs.length > defaultLimit && (
+                  <button 
+                    className="btn btn-secondary" 
+                    style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
+                    onClick={() => setShowAllCollab(!showAllCollab)}
+                  >
+                    {showAllCollab ? 'Show Less' : 'Show More'}
+                  </button>
+                )}
+              </div>
               <div className="rec-carousel">
-                {collabRecs.map((rec, idx) => (
+                {visibleCollab.map((rec, idx) => (
                   <div 
                     key={idx} 
                     className="rec-item card" 
@@ -225,12 +283,23 @@ const MemberDashboard = () => {
 
             {/* 3. Popular Books */}
             <section style={{ marginBottom: '3rem' }}>
-              <h2 style={{ fontSize: '1.4rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Bookmark size={20} style={{ color: 'hsl(var(--accent))' }} />
-                <span>Most Popular Books</span>
-              </h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <h2 style={{ fontSize: '1.4rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Bookmark size={20} style={{ color: 'hsl(var(--accent))' }} />
+                  <span>Most Popular Books</span>
+                </h2>
+                {popularBooks.length > defaultLimit && (
+                  <button 
+                    className="btn btn-secondary" 
+                    style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
+                    onClick={() => setShowAllPopular(!showAllPopular)}
+                  >
+                    {showAllPopular ? 'Show Less' : 'Show More'}
+                  </button>
+                )}
+              </div>
               <div className="rec-carousel">
-                {popularBooks.map((rec, idx) => (
+                {visiblePopular.map((rec, idx) => (
                   <div 
                     key={idx} 
                     className="rec-item card" 
