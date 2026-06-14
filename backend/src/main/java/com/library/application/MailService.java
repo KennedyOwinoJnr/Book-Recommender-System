@@ -42,6 +42,28 @@ public class MailService {
         sendHtmlEmail(toEmail, subject, htmlContent);
     }
 
+    public void sendReservationExpiredEmail(String toEmail, String bookTitle) {
+        String subject = "Your reservation hold has expired";
+        String htmlContent = "<h3>Reservation Expired</h3>"
+                + "<p>We wanted to let you know that your reservation hold on the book <strong>\"" + bookTitle + "\"</strong> has expired.</p>"
+                + "<p>Since the book was not collected or borrowed, it has been returned to circulation or assigned to the next reader in queue.</p>"
+                + "<br/>"
+                + "<p>Thank you for using Tomrec Library!</p>";
+
+        sendHtmlEmail(toEmail, subject, htmlContent);
+    }
+
+    public void sendBorrowingDueReminder(String toEmail, String bookTitle, long daysRemaining) {
+        String subject = "Reminder: Book due in " + daysRemaining + " days";
+        String htmlContent = "<h3>Borrowing Due Reminder</h3>"
+                + "<p>This is a reminder that the book <strong>\"" + bookTitle + "\"</strong> you borrowed is due in <strong>" + daysRemaining + " days</strong>.</p>"
+                + "<p>Please return it to the library by the due date to avoid any late fees.</p>"
+                + "<br/>"
+                + "<p>Thank you for using Tomrec Library!</p>";
+
+        sendHtmlEmail(toEmail, subject, htmlContent);
+    }
+
     private void sendHtmlEmail(String to, String subject, String htmlContent) {
         try {
             MimeMessage message = mailSender.createMimeMessage();

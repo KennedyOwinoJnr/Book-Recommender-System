@@ -27,13 +27,16 @@ public class BorrowingService {
     private final BookRepository bookRepository;
     private final ReservationRepository reservationRepository;
     private final AuditLogService auditLogService;
+    private final MailService mailService;
 
     public BorrowingService(BorrowingRepository borrowingRepository, BookRepository bookRepository,
-                            ReservationRepository reservationRepository, AuditLogService auditLogService) {
+                            ReservationRepository reservationRepository, AuditLogService auditLogService,
+                            MailService mailService) {
         this.borrowingRepository = borrowingRepository;
         this.bookRepository = bookRepository;
         this.reservationRepository = reservationRepository;
         this.auditLogService = auditLogService;
+        this.mailService = mailService;
     }
 
     @Transactional
@@ -153,6 +156,11 @@ public class BorrowingService {
                 BigDecimal fine = calculateFine(b.getDueDate(), now);
                 b.setFineAmount(fine);
                 borrowingRepository.save(b);
+            } else if ("ACTIVE".equals(b.getStatus())) {
+                long daysRemaining = ChronoUnit.DAYS.between(now, b.getDueDate());
+                if (daysRemaining == 3) {
+                    mailService.sendBorrowingDueReminder(b.getUser().getEmail(), b.getBook().getTitle(), daysRemaining);
+                }
             }
         }
     }

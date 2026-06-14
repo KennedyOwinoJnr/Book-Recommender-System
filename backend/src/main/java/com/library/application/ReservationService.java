@@ -18,12 +18,14 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final BookRepository bookRepository;
     private final AuditLogService auditLogService;
+    private final MailService mailService;
 
     public ReservationService(ReservationRepository reservationRepository, BookRepository bookRepository,
-                              AuditLogService auditLogService) {
+                              AuditLogService auditLogService, MailService mailService) {
         this.reservationRepository = reservationRepository;
         this.bookRepository = bookRepository;
         this.auditLogService = auditLogService;
+        this.mailService = mailService;
     }
 
     @Transactional
@@ -87,6 +89,10 @@ public class ReservationService {
         for (Reservation r : expired) {
             r.setStatus("EXPIRED");
             reservationRepository.save(r);
+            
+            // Send email notification to the user
+            mailService.sendReservationExpiredEmail(r.getUser().getEmail(), r.getBook().getTitle());
+            
             auditLogService.log(r.getUser().getId(), r.getUser().getEmail(), "RESERVATION_EXPIRE", "Book", r.getBook().getId(), 
                     "Reservation expired for book: " + r.getBook().getTitle());
         }
