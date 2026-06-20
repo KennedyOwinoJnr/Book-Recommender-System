@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Sparkles, LogIn, UserPlus } from 'lucide-react';
+import { BookOpen, Sparkles, LogIn, UserPlus, ShieldCheck } from 'lucide-react';
 import apiClient from '../api/client';
 
 const LandingPage = () => {
@@ -8,124 +8,118 @@ const LandingPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch popular books
     apiClient.get('/recommendations/popular?limit=6')
-      .then(res => {
-        setPopularBooks(res.data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
+      .then(res => { setPopularBooks(res.data); setLoading(false); })
+      .catch(() => setLoading(false));
   }, []);
 
   return (
-    <div style={{ minHeight: '100vh', background: 'radial-gradient(circle at 50% -20%, hsla(262, 80%, 55%, 0.15), transparent 70%), hsl(var(--bg))' }}>
-      {/* Header navbar */}
-      <header style={{ borderBottom: '1px solid hsl(var(--border))', padding: '1rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '1.5rem', background: 'linear-gradient(135deg, white, hsl(var(--secondary)))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-          <BookOpen size={28} className="text-secondary" style={{ color: 'hsl(var(--secondary))' }} />
+    <div className="landing-root">
+
+      {/* ── Navbar ── */}
+      <header className="landing-nav">
+        <div className="landing-logo">
+          <BookOpen size={26} style={{ color: 'hsl(var(--secondary))' }} />
           <span>Tomrec</span>
         </div>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <Link to="/login" className="btn btn-secondary" style={{ padding: '0.5rem 1.25rem' }}>
-            <LogIn size={16} />
+        <div className="landing-nav-actions">
+          <Link to="/login" className="btn btn-secondary landing-nav-btn">
+            <LogIn size={15} />
             <span>Login</span>
           </Link>
-          <Link to="/register" className="btn btn-primary" style={{ padding: '0.5rem 1.25rem' }}>
-            <UserPlus size={16} />
+          <Link to="/register" className="btn btn-primary landing-nav-btn">
+            <UserPlus size={15} />
             <span>Register</span>
           </Link>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '4rem 2rem', textAlign: 'center' }} className="fade-in">
-        <div style={{ marginBottom: '3rem' }}>
-          <span className="badge badge-primary" style={{ marginBottom: '1rem', letterSpacing: '0.05em' }}>
-            <Sparkles size={12} style={{ marginRight: '0.25rem' }} />
+      {/* ── Hero — fills full viewport below navbar ── */}
+      <section className="landing-hero fade-in">
+        <div className="landing-hero-inner">
+          <span className="badge badge-primary landing-badge">
+            <Sparkles size={11} style={{ marginRight: '0.25rem' }} />
             Machine Learning Powered
           </span>
-          <h1 style={{ fontSize: '3.5rem', fontWeight: 850, lineHeight: 1.1, marginBottom: '1.5rem', background: 'linear-gradient(to right, #fff, hsl(var(--text-muted)))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            Discover Your Next Great Read
+
+          <h1 className="landing-h1">
+            Discover Your<br className="landing-br" /> Next Great Read
           </h1>
-          <p style={{ fontSize: '1.25rem', color: 'hsl(var(--text-muted))', maxWidth: '650px', margin: '0 auto 2.5rem', fontWeight: 400 }}>
-            Tomrec is a next-generation Library Management System utilizing advanced collaborative SVD algorithms and TF-IDF content filtering to deliver tailored recommendations.
+
+          <p className="landing-subtitle">
+            Tomrec is a next-generation Library Management System using
+            collaborative SVD algorithms and TF-IDF content filtering to
+            deliver tailored recommendations.
           </p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem' }}>
-            <Link to="/register" className="btn btn-primary" style={{ padding: '1rem 2rem', fontSize: '1.05rem' }}>
+
+          <div className="landing-cta-group">
+            <Link to="/register" className="btn btn-primary landing-cta-btn">
               Create Free Account
             </Link>
-            <Link to="/catalog" className="btn btn-secondary" style={{ padding: '1rem 2rem', fontSize: '1.05rem' }}>
+            <Link to="/catalog" className="btn btn-secondary landing-cta-btn">
               Explore Catalog
             </Link>
           </div>
         </div>
+      </section>
 
-        {/* Features Row */}
-        <div className="dashboard-grid" style={{ margin: '4rem 0' }}>
-          <div className="card" style={{ textAlign: 'left' }}>
-            <div style={{ color: 'hsl(var(--secondary))', marginBottom: '1rem' }}>
-              <Sparkles size={32} />
+      {/* ── Features ── */}
+      <section className="landing-section">
+        <div className="landing-container">
+          <div className="landing-features-grid">
+            <div className="card landing-feature-card">
+              <Sparkles size={30} style={{ color: 'hsl(var(--secondary))', marginBottom: '1rem' }} />
+              <h3 className="landing-feature-title">SVD Recommender</h3>
+              <p className="landing-feature-text">
+                Collaborative SVD modeling trained on 1.1 million ratings with
+                prediction MAE well below industry standards.
+              </p>
             </div>
-            <h3 style={{ marginBottom: '0.5rem' }}>SVD Recommender</h3>
-            <p style={{ color: 'hsl(var(--text-muted))', fontSize: '0.9rem' }}>
-              Collaborative SVD modeling trained on 1.1 million ratings guarantees a prediction MAE well below industry standards.
-            </p>
-          </div>
-
-          <div className="card" style={{ textAlign: 'left' }}>
-            <div style={{ color: 'hsl(var(--primary))', marginBottom: '1rem' }}>
-              <BookOpen size={32} />
+            <div className="card landing-feature-card">
+              <BookOpen size={30} style={{ color: 'hsl(var(--primary))', marginBottom: '1rem' }} />
+              <h3 className="landing-feature-title">Circulation Desk</h3>
+              <p className="landing-feature-text">
+                Borrow, return, and reserve titles in a unified interface.
+                Overdue fines and holds are automatically dispatched.
+              </p>
             </div>
-            <h3 style={{ marginBottom: '0.5rem' }}>Circulation Desk</h3>
-            <p style={{ color: 'hsl(var(--text-muted))', fontSize: '0.9rem' }}>
-              Borrow, return, and reserve titles in a single unified interface. Overdue fines and holds are automatically dispatched.
-            </p>
-          </div>
-
-          <div className="card" style={{ textAlign: 'left' }}>
-            <div style={{ color: 'hsl(var(--accent))', marginBottom: '1rem' }}>
-              <LogIn size={32} />
+            <div className="card landing-feature-card">
+              <ShieldCheck size={30} style={{ color: 'hsl(var(--accent))', marginBottom: '1rem' }} />
+              <h3 className="landing-feature-title">Secure Auditing</h3>
+              <p className="landing-feature-text">
+                Role-Based Access Control protecting user workflows with
+                automated logs tracking all admin operations.
+              </p>
             </div>
-            <h3 style={{ marginBottom: '0.5rem' }}>Secure Auditing</h3>
-            <p style={{ color: 'hsl(var(--text-muted))', fontSize: '0.9rem' }}>
-              Role-Based Access Control protecting user workflows with automated logs tracking admin operations.
-            </p>
           </div>
         </div>
+      </section>
 
-        {/* Popular Books Carousel */}
-        <section style={{ textAlign: 'left', marginTop: '5rem' }}>
-          <h2 style={{ fontSize: '1.75rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span>👍 Most Popular Books</span>
+      {/* ── Popular Books ── */}
+      <section className="landing-section landing-books-section">
+        <div className="landing-container">
+          <h2 className="landing-section-title">
+            👍 Most Popular Books
           </h2>
-
           {loading ? (
-            <div style={{ color: 'hsl(var(--text-muted))', textAlign: 'center', padding: '3rem' }}>
-              Loading popular books...
-            </div>
+            <div className="landing-loading">Loading popular books…</div>
           ) : (
             <div className="rec-carousel">
               {popularBooks.map((book, idx) => (
-                <div key={idx} className="rec-item card" style={{ padding: '0.75rem', display: 'flex', flexDirection: 'column' }}>
-                  <img src={book.image_url} alt={book.title} className="book-cover" style={{ height: '200px' }} />
-                  <p style={{ fontWeight: 600, fontSize: '0.85rem', marginTop: '0.75rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={book.title}>
-                    {book.title}
-                  </p>
-                  <p style={{ fontSize: '0.7rem', color: 'hsl(var(--text-muted))' }}>
-                    Popular choice
-                  </p>
+                <div key={idx} className="rec-item card landing-book-card">
+                  <img src={book.image_url} alt={book.title} className="book-cover" />
+                  <p className="landing-book-title" title={book.title}>{book.title}</p>
+                  <p className="landing-book-sub">Popular choice</p>
                 </div>
               ))}
             </div>
           )}
-        </section>
-      </main>
+        </div>
+      </section>
 
-      <footer style={{ borderTop: '1px solid hsl(var(--border))', padding: '2rem', textAlign: 'center', color: 'hsl(var(--text-muted))', fontSize: '0.85rem' }}>
-        <p>&copy; 2026 Tomrec Library Systems. All rights reserved.</p>
+      {/* ── Footer ── */}
+      <footer className="landing-footer">
+        <p>© 2026 Tomrec Library Systems. All rights reserved.</p>
       </footer>
     </div>
   );
