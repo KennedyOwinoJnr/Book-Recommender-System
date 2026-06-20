@@ -1,20 +1,20 @@
 services:
-#  postgres:
-#    image: postgres:16-alpine
-#    container_name: library-postgres
-#    environment:
-#      POSTGRES_DB: ${POSTGRES_DB:-library_db}
-#      POSTGRES_USER: ${POSTGRES_USER:-library_user}
-#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-library_pass}
-#    ports:
-#      - "${POSTGRES_PORT:-5433}:5432"
-#    volumes:
-#      - postgres_data:/var/lib/postgresql/data
-#    healthcheck:
-#      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-library_user} -d ${POSTGRES_DB:-library_db}"]
-#      interval: 5s
-#      timeout: 5s
-#      retries: 5
+  postgres:
+    image: postgres:16-alpine
+    container_name: library-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-library_db}
+      POSTGRES_USER: ${POSTGRES_USER:-library_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-library_pass}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-library_user} -d ${POSTGRES_DB:-library_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   mailpit:
     image: axllent/mailpit:v1.15
@@ -68,9 +68,9 @@ services:
       - INITIAL_ADMIN_EMAIL=${INITIAL_ADMIN_EMAIL:-admin@library.com}
       - INITIAL_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD:-Admin@123}
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost:2040}
-#    depends_on:
-#      postgres:
-#        condition: service_healthy
+    depends_on:
+      postgres:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 10s
