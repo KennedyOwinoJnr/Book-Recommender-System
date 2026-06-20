@@ -1,31 +1,31 @@
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: library-postgres
-    environment:
-      POSTGRES_DB: library_db
-      POSTGRES_USER: library_user
-      POSTGRES_PASSWORD: library_pass
-    ports:
-      - "5433:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U library_user -d library_db"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+#  postgres:
+#    image: postgres:16-alpine
+#    container_name: library-postgres
+#    environment:
+#      POSTGRES_DB: ${POSTGRES_DB:-library_db}
+#      POSTGRES_USER: ${POSTGRES_USER:-library_user}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-library_pass}
+#    ports:
+#      - "${POSTGRES_PORT:-5433}:5432"
+#    volumes:
+#      - postgres_data:/var/lib/postgresql/data
+#    healthcheck:
+#      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-library_user} -d ${POSTGRES_DB:-library_db}"]
+#      interval: 5s
+#      timeout: 5s
+#      retries: 5
 
   mailpit:
     image: axllent/mailpit:v1.15
     container_name: library-mailpit
     ports:
-      - "2041:8025" # Web UI
-      - "1025:1025" # SMTP Port
+      - "${MAILPIT_UI_PORT:-2041}:8025" # Web UI
+      - "${MAILPIT_SMTP_PORT:-1025}:1025" # SMTP Port
     environment:
-      MP_MAX_MESSAGES: 500
-      MP_SMTP_AUTH_ACCEPT_ANY: "true"
-      MP_SMTP_AUTH_ALLOW_INSECURE: "true"
+      MP_MAX_MESSAGES: ${MP_MAX_MESSAGES:-500}
+      MP_SMTP_AUTH_ACCEPT_ANY: "${MP_SMTP_AUTH_ACCEPT_ANY:-true}"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "${MP_SMTP_AUTH_ALLOW_INSECURE:-true}"
 
   ml-service:
     build:
@@ -33,13 +33,13 @@ services:
       dockerfile: Dockerfile
     container_name: library-ml-service
     ports:
-      - "2043:5000"
+      - "${ML_SERVICE_PORT:-2043}:5000"
     volumes:
       - ./Deployment:/app/models:ro # Bind mount models from original folder to avoid duplicating large pkl files
     environment:
-      - PORT=5000
+      - PORT=${ML_INTERNAL_PORT:-5000}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:${ML_INTERNAL_PORT:-5000}/health"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -50,27 +50,27 @@ services:
       dockerfile: Dockerfile
     container_name: library-backend
     ports:
-      - "2042:8080"
+      - "${BACKEND_PORT:-2042}:8080"
     volumes:
       - ./data:/app/data:ro # Bind mount original CSVs for database seeding
     environment:
-      - SPRING_PROFILES_ACTIVE=dev
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/library_db
-      - SPRING_DATASOURCE_USERNAME=library_user
-      - SPRING_DATASOURCE_PASSWORD=library_pass
-      - SPRING_MAIL_HOST=mailpit
-      - SPRING_MAIL_PORT=1025
-      - SPRING_MAIL_USERNAME=
-      - SPRING_MAIL_PASSWORD=
-      - ML_SERVICE_URL=http://ml-service:5000
-      - JWT_SECRET=dGhpcyBpcyBhIHZlcnkgbG9uZyBhbmQgc2VjdXJlIGJhc2U2NCBlbmNvZGVkIHNlY3JldCBrZXkgZm9yIEpXVCBITUFDU0hBNTEy
-      - JWT_EXPIRY_MS=86400000
-      - INITIAL_ADMIN_EMAIL=admin@library.com
-      - INITIAL_ADMIN_PASSWORD=Admin@123
-      - FRONTEND_URL=http://localhost:2040
-    depends_on:
-      postgres:
-        condition: service_healthy
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-dev}
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL:-jdbc:postgresql://postgres:5432/library_db}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER:-library_user}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-library_pass}
+      - SPRING_MAIL_HOST=${SPRING_MAIL_HOST:-mailpit}
+      - SPRING_MAIL_PORT=${SPRING_MAIL_PORT:-1025}
+      - SPRING_MAIL_USERNAME=${SPRING_MAIL_USERNAME:-}
+      - SPRING_MAIL_PASSWORD=${SPRING_MAIL_PASSWORD:-}
+      - ML_SERVICE_URL=${ML_SERVICE_URL:-http://ml-service:5000}
+      - JWT_SECRET=${JWT_SECRET:-dGhpcyBpcyBhIHZlcnkgbG9uZyBhbmQgc2VjdXJlIGJhc2U2NCBlbmNvZGVkIHNlY3JldCBrZXkgZm9yIEpXVCBITUFDU0hBNTEy}
+      - JWT_EXPIRY_MS=${JWT_EXPIRY_MS:-86400000}
+      - INITIAL_ADMIN_EMAIL=${INITIAL_ADMIN_EMAIL:-admin@library.com}
+      - INITIAL_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD:-Admin@123}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:2040}
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 10s
@@ -83,7 +83,7 @@ services:
       dockerfile: Dockerfile
     container_name: library-frontend
     ports:
-      - "2040:80"
+      - "${FRONTEND_PORT:-2040}:80"
     depends_on:
       - backend
 
