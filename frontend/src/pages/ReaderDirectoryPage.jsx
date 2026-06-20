@@ -217,7 +217,7 @@ const ReaderDirectoryPage = () => {
                         </span>
                       </td>
                       <td>
-                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
                           <button
                             onClick={() => handleToggleActive(u.id, u.isActive, u.username)}
                             className="btn btn-secondary"

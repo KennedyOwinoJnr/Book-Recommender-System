@@ -139,8 +139,8 @@ const CatalogPage = () => {
         </div>
 
         {/* Filter / Search Bar */}
-        <form onSubmit={handleSearchSubmit} className="card" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center', marginBottom: '2.5rem' }}>
-          <div style={{ flexGrow: 1, position: 'relative', minWidth: '250px' }}>
+        <form onSubmit={handleSearchSubmit} className="card filter-bar" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center', marginBottom: '2rem' }}>
+          <div style={{ flexGrow: 1, position: 'relative', minWidth: 'min(250px, 100%)' }}>
             <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'hsl(var(--text-muted))' }} />
             <input 
               type="text" 
@@ -152,7 +152,7 @@ const CatalogPage = () => {
             />
           </div>
 
-          <div style={{ minWidth: '200px' }}>
+          <div style={{ minWidth: 'min(200px, 100%)' }}>
             <select 
               className="form-control"
               value={selectedCategory}
@@ -258,7 +258,7 @@ const CatalogPage = () => {
             
             {bookDetails ? (
               <div>
-                <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '2rem' }}>
+                <div className="modal-book-row" style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
                   <img src={bookDetails.imageUrlLarge || bookDetails.imageUrlMedium} alt={bookDetails.title} style={{ width: '150px', height: '220px', objectFit: 'cover', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }} />
                   <div>
                     <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{bookDetails.title}</h2>
@@ -300,7 +300,7 @@ const CatalogPage = () => {
                   </div>
                 )}
 
-                <div style={{ display: 'flex', gap: '1rem', borderTop: '1px solid hsl(var(--border))', paddingTop: '1.5rem', flexWrap: 'wrap' }}>
+                <div className="modal-actions" style={{ display: 'flex', gap: '1rem', borderTop: '1px solid hsl(var(--border))', paddingTop: '1.5rem', flexWrap: 'wrap' }}>
                   {bookDetails.stockAvailable > 0 ? (
                     <button onClick={handleBorrow} className="btn btn-primary">
                       Borrow Book
@@ -311,7 +311,7 @@ const CatalogPage = () => {
                     </button>
                   )}
 
-                  <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div className="modal-rating" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <span style={{ fontSize: '0.9rem', color: 'hsl(var(--text-muted))' }}>My Rating:</span>
                     <select 
                       value={ratingValue} 

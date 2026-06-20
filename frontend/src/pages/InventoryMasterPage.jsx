@@ -177,7 +177,7 @@ const InventoryMasterPage = () => {
         )}
 
         {/* Search */}
-        <form onSubmit={handleSearchSubmit} className="card" style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '2.5rem' }}>
+        <form onSubmit={handleSearchSubmit} className="card filter-bar" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '2.5rem' }}>
           <div style={{ flexGrow: 1, position: 'relative' }}>
             <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'hsl(var(--text-muted))' }} />
             <input 
@@ -251,14 +251,14 @@ const InventoryMasterPage = () => {
       {/* Add / Edit Modal */}
       {showModal && createPortal(
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-content" style={{ maxWidth: '700px' }} onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" style={{ maxWidth: 'min(700px, 95vw)' }} onClick={(e) => e.stopPropagation()}>
             <button className="close-btn" onClick={() => setShowModal(false)}>&times;</button>
             <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>
               {editId ? 'Edit Book Details' : 'Register New Book Item'}
             </h2>
 
             <form onSubmit={handleFormSubmit}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div className="form-group">
                   <label className="form-label">ISBN Code</label>
                   <input 
@@ -285,7 +285,7 @@ const InventoryMasterPage = () => {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div className="form-group">
                   <label className="form-label">Book Author</label>
                   <input 
@@ -311,7 +311,7 @@ const InventoryMasterPage = () => {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem' }}>
                 <div className="form-group">
                   <label className="form-label">Publication Year</label>
                   <input 

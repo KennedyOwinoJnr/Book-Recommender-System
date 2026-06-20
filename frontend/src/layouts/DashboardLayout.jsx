@@ -1,23 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { 
-  BookOpen, 
-  History, 
-  Bookmark, 
-  Sparkles, 
-  Settings, 
-  Users, 
-  FileText, 
-  LogOut, 
+import {
+  BookOpen,
+  History,
+  Bookmark,
+  Sparkles,
+  Settings,
+  Users,
+  FileText,
+  LogOut,
   Database,
   User as UserIcon,
-  Shield
+  Shield,
+  Menu,
+  X
 } from 'lucide-react';
 
 const DashboardLayout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const roles = user.roles || [];
   const username = user.username || 'Reader';
@@ -32,135 +35,123 @@ const DashboardLayout = ({ children }) => {
     navigate('/');
   };
 
+  const closeSidebar = () => setSidebarOpen(false);
+
+  const NavLink = ({ to, icon: Icon, label, startsWith }) => {
+    const active = startsWith
+      ? location.pathname.startsWith(to)
+      : location.pathname === to;
+    return (
+      <Link
+        to={to}
+        className={`sidebar-link ${active ? 'active' : ''}`}
+        onClick={closeSidebar}
+      >
+        <Icon size={18} />
+        <span>{label}</span>
+      </Link>
+    );
+  };
+
+  const sidebarContent = (
+    <>
+      <div className="sidebar-logo">
+        <BookOpen size={24} />
+        <span>Tomrec Library</span>
+      </div>
+
+      <nav className="sidebar-menu">
+        <NavLink to="/dashboard" icon={Sparkles} label="My Portal / Recs" />
+        <NavLink to="/catalog" icon={BookOpen} label="Search Catalog" />
+        <NavLink to="/my-borrowings" icon={History} label="My Borrowings" />
+        <NavLink to="/my-reservations" icon={Bookmark} label="My Reservations" />
+        <NavLink to="/settings" icon={Settings} label="Account Settings" />
+
+        {isLibrarian && (
+          <>
+            <div className="sidebar-section-label">Librarian Desk</div>
+            <NavLink to="/librarian/books" icon={Database} label="Inventory Master" startsWith />
+            <NavLink to="/librarian/loans" icon={History} label="Circulation Track" startsWith />
+          </>
+        )}
+
+        {isAdmin && (
+          <>
+            <div className="sidebar-section-label">Admin Operations</div>
+            <NavLink to="/admin/users" icon={Users} label="Reader Directory" />
+          </>
+        )}
+
+        {isSuperAdmin && (
+          <>
+            <div className="sidebar-section-label">System Control</div>
+            <NavLink to="/admin/audit-logs" icon={FileText} label="System Audit Logs" />
+          </>
+        )}
+      </nav>
+
+      <div className="sidebar-footer">
+        <div className="sidebar-user">
+          <div className="sidebar-user-avatar">
+            <UserIcon size={16} />
+          </div>
+          <div className="sidebar-user-info">
+            <p className="sidebar-username">{username}</p>
+            <p className="sidebar-role">
+              <Shield size={10} />
+              {roles[0]?.replace('ROLE_', '') || 'MEMBER'}
+            </p>
+          </div>
+        </div>
+        <button onClick={handleLogout} className="sidebar-link sidebar-logout">
+          <LogOut size={16} />
+          <span>Logout</span>
+        </button>
+      </div>
+    </>
+  );
+
   return (
     <div className="app-container fade-in">
-      {/* Sidebar Nav */}
-      <aside className="sidebar">
-        <div className="sidebar-logo">
-          <BookOpen size={24} className="text-secondary" />
-          <span>Tomrec Library</span>
+      {/* ── Mobile top bar ── */}
+      <div className="mobile-topbar">
+        <button
+          className="mobile-menu-btn"
+          onClick={() => setSidebarOpen(true)}
+          aria-label="Open menu"
+        >
+          <Menu size={22} />
+        </button>
+        <div className="mobile-topbar-logo">
+          <BookOpen size={20} style={{ color: 'hsl(var(--secondary))' }} />
+          <span>Tomrec</span>
         </div>
+        <div style={{ width: 40 }} /> {/* spacer to keep logo centred */}
+      </div>
 
-        <nav className="sidebar-menu">
-          <Link 
-            to="/dashboard" 
-            className={`sidebar-link ${location.pathname === '/dashboard' ? 'active' : ''}`}
-          >
-            <Sparkles size={18} />
-            <span>My Portal / Recs</span>
-          </Link>
+      {/* ── Backdrop for mobile overlay ── */}
+      {sidebarOpen && (
+        <div
+          className="sidebar-backdrop"
+          onClick={closeSidebar}
+          aria-hidden="true"
+        />
+      )}
 
-          <Link 
-            to="/catalog" 
-            className={`sidebar-link ${location.pathname === '/catalog' ? 'active' : ''}`}
-          >
-            <BookOpen size={18} />
-            <span>Search Catalog</span>
-          </Link>
-
-          <Link 
-            to="/my-borrowings" 
-            className={`sidebar-link ${location.pathname === '/my-borrowings' ? 'active' : ''}`}
-          >
-            <History size={18} />
-            <span>My Borrowings</span>
-          </Link>
-
-          <Link 
-            to="/my-reservations" 
-            className={`sidebar-link ${location.pathname === '/my-reservations' ? 'active' : ''}`}
-          >
-            <Bookmark size={18} />
-            <span>My Reservations</span>
-          </Link>
-
-          <Link 
-            to="/settings" 
-            className={`sidebar-link ${location.pathname === '/settings' ? 'active' : ''}`}
-          >
-            <Settings size={18} />
-            <span>Account Settings</span>
-          </Link>
-
-          {/* Librarian Options */}
-          {isLibrarian && (
-            <>
-              <div style={{ margin: '1rem 0 0.25rem 1rem', fontSize: '0.75rem', color: 'hsl(var(--text-muted))', fontWeight: 'bold', textTransform: 'uppercase' }}>
-                Librarian Desk
-              </div>
-              <Link 
-                to="/librarian/books" 
-                className={`sidebar-link ${location.pathname.startsWith('/librarian/books') ? 'active' : ''}`}
-              >
-                <Database size={18} />
-                <span>Inventory Master</span>
-              </Link>
-              <Link 
-                to="/librarian/loans" 
-                className={`sidebar-link ${location.pathname.startsWith('/librarian/loans') ? 'active' : ''}`}
-              >
-                <History size={18} />
-                <span>Circulation Track</span>
-              </Link>
-            </>
-          )}
-
-          {/* Admin Options */}
-          {isAdmin && (
-            <>
-              <div style={{ margin: '1rem 0 0.25rem 1rem', fontSize: '0.75rem', color: 'hsl(var(--text-muted))', fontWeight: 'bold', textTransform: 'uppercase' }}>
-                Admin Operations
-              </div>
-              <Link 
-                to="/admin/users" 
-                className={`sidebar-link ${location.pathname === '/admin/users' ? 'active' : ''}`}
-              >
-                <Users size={18} />
-                <span>Reader Directory</span>
-              </Link>
-            </>
-          )}
-
-          {/* Super Admin Options */}
-          {isSuperAdmin && (
-            <>
-              <div style={{ margin: '1rem 0 0.25rem 1rem', fontSize: '0.75rem', color: 'hsl(var(--text-muted))', fontWeight: 'bold', textTransform: 'uppercase' }}>
-                System Control
-              </div>
-              <Link 
-                to="/admin/audit-logs" 
-                className={`sidebar-link ${location.pathname === '/admin/audit-logs' ? 'active' : ''}`}
-              >
-                <FileText size={18} />
-                <span>System Audit Logs</span>
-              </Link>
-            </>
-          )}
-        </nav>
-
-        <div className="sidebar-footer">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', padding: '0 0.5rem' }}>
-            <div style={{ background: 'hsl(var(--border))', borderRadius: '50%', padding: '0.5rem' }}>
-              <UserIcon size={16} />
-            </div>
-            <div style={{ overflow: 'hidden' }}>
-              <p style={{ fontWeight: 600, fontSize: '0.85rem', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                {username}
-              </p>
-              <p style={{ fontSize: '0.7rem', color: 'hsl(var(--text-muted))', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                <Shield size={10} />
-                {roles[0]?.replace('ROLE_', '') || 'MEMBER'}
-              </p>
-            </div>
-          </div>
-          <button onClick={handleLogout} className="sidebar-link btn-danger" style={{ width: '100%', border: 'none', background: 'transparent' }}>
-            <LogOut size={16} />
-            <span>Logout</span>
-          </button>
-        </div>
+      {/* ── Sidebar ── */}
+      <aside className={`sidebar ${sidebarOpen ? 'sidebar--open' : ''}`}>
+        {/* Mobile close button inside sidebar */}
+        <button
+          className="sidebar-close-btn"
+          onClick={closeSidebar}
+          aria-label="Close menu"
+        >
+          <X size={20} />
+        </button>
+        {sidebarContent}
       </aside>
 
-      {/* Main pane */}
+      {/* ── Main content ── */}
       <main className="main-content">
         {children}
       </main>

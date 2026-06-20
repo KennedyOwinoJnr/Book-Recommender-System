@@ -157,8 +157,8 @@ const MemberDashboard = () => {
     <DashboardLayout>
       <div className="fade-in">
         {/* Welcome Section */}
-        <div style={{ marginBottom: '2.5rem' }}>
-          <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>
+        <div style={{ marginBottom: '2rem' }}>
+          <h1 style={{ fontSize: 'clamp(1.4rem, 5vw, 2rem)', marginBottom: '0.5rem' }}>
             Welcome back, {user.username}!
           </h1>
           <p style={{ color: 'hsl(var(--text-muted))' }}>
@@ -329,7 +329,7 @@ const MemberDashboard = () => {
             
             {bookDetails ? (
               <div>
-                <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '2rem' }}>
+                <div className="modal-book-row" style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
                   <img src={bookDetails.imageUrlLarge || bookDetails.imageUrlMedium} alt={bookDetails.title} style={{ width: '150px', height: '220px', objectFit: 'cover', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }} />
                   <div>
                     <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{bookDetails.title}</h2>
@@ -373,7 +373,7 @@ const MemberDashboard = () => {
                 )}
 
                 {/* Operations Section */}
-                <div style={{ display: 'flex', gap: '1rem', borderTop: '1px solid hsl(var(--border))', paddingTop: '1.5rem', flexWrap: 'wrap' }}>
+                <div className="modal-actions" style={{ display: 'flex', gap: '1rem', borderTop: '1px solid hsl(var(--border))', paddingTop: '1.5rem', flexWrap: 'wrap' }}>
                   {bookDetails.stockAvailable > 0 ? (
                     <button onClick={handleBorrow} className="btn btn-primary">
                       Borrow Book
@@ -385,7 +385,7 @@ const MemberDashboard = () => {
                   )}
 
                   {/* Rating control */}
-                  <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div className="modal-rating" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <span style={{ fontSize: '0.9rem', color: 'hsl(var(--text-muted))' }}>My Rating:</span>
                     <select 
                       value={ratingValue} 
