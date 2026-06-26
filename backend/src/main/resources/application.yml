@@ -42,10 +42,9 @@ spring:
     properties:
       mail:
         smtp:
-          auth: false
+          auth: true
           starttls:
-            enable: false
-            required: false
+            enable: true
 
 app:
   jwt:
